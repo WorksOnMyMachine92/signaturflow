@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router-dom';
 import { AppShell } from '../components/layout/AppShell';
 import { DashboardPage } from '../features/dashboard/DashboardPage';
 import { CreateWorkflowPage } from '../features/workflows/CreateWorkflowPage';
+import { WorkflowDetailPage } from '../features/workflows/WorkflowDetailPage';
 
 function Placeholder({ title }: { title: string }) {
   return (
@@ -20,7 +21,7 @@ export const router = createBrowserRouter(
       children: [
         { index: true, element: <DashboardPage /> },
         { path: 'vorgaenge/neu', element: <CreateWorkflowPage /> },
-        { path: 'vorgaenge/:id', element: <Placeholder title="Vorgangsdetails" /> },
+        { path: 'vorgaenge/:id', element: <WorkflowDetailPage /> },
         { path: 'pruefen', element: <Placeholder title="Dokument prüfen" /> },
         { path: 'barrierefreiheit', element: <Placeholder title="Barrierefreiheit" /> },
       ],

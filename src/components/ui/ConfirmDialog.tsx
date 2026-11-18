@@ -11,29 +11,36 @@ type ConfirmDialogProps = {
 };
 
 export function ConfirmDialog(props: ConfirmDialogProps) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
+  const confirmRef = useRef<HTMLButtonElement>(null);
+  const previousFocus = useRef<HTMLElement | null>(null);
   useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    if (props.open && !dialog.open) dialog.showModal();
-    if (!props.open && dialog.open) dialog.close();
-  }, [props.open]);
-
+    if (!props.open) return;
+    previousFocus.current = document.activeElement as HTMLElement | null;
+    confirmRef.current?.focus();
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') props.onCancel();
+    };
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('keydown', handleKey);
+      previousFocus.current?.focus();
+    };
+  }, [props.open, props.onCancel]);
+  if (!props.open) return null;
   return (
-    <dialog
-      ref={dialogRef}
-      className="dialog"
-      onCancel={props.onCancel}
-      aria-labelledby="dialog-title"
-    >
-      <h2 id="dialog-title">{props.title}</h2>
-      <div>{props.children}</div>
-      <div className="dialog__actions">
-        <Button variant="secondary" onClick={props.onCancel}>
-          Abbrechen
-        </Button>
-        <Button onClick={props.onConfirm}>{props.confirmLabel}</Button>
-      </div>
-    </dialog>
+    <div className="dialog-backdrop">
+      <section className="dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
+        <h2 id="dialog-title">{props.title}</h2>
+        <div>{props.children}</div>
+        <div className="dialog__actions">
+          <Button variant="secondary" onClick={props.onCancel}>
+            Abbrechen
+          </Button>
+          <Button ref={confirmRef} onClick={props.onConfirm}>
+            {props.confirmLabel}
+          </Button>
+        </div>
+      </section>
+    </div>
   );
 }
