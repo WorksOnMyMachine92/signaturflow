@@ -35,12 +35,11 @@ describe('App', () => {
     expect(screen.getByText('Demo – keine rechtsgültige Signatur')).toBeVisible();
   });
 
-  it('gives every theme control an accessible name', () => {
+  it('provides labelled navigation and theme controls', () => {
     renderApp();
 
-    expect(screen.getByRole('radio', { name: 'System' })).toBeChecked();
-    expect(screen.getByRole('radio', { name: 'Hell' })).toBeEnabled();
-    expect(screen.getByRole('radio', { name: 'Dunkel' })).toBeEnabled();
+    expect(screen.getByRole('navigation', { name: 'Hauptnavigation' })).toBeVisible();
+    expect(screen.getByRole('combobox', { name: 'Farbschema' })).toHaveValue('system');
   });
 
   it('has no automatically detectable accessibility violations', async () => {
