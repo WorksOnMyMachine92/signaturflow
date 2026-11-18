@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { AppShell } from '../components/layout/AppShell';
 import { DashboardPage } from '../features/dashboard/DashboardPage';
+import { VerificationPage } from '../features/verification/VerificationPage';
 import { CreateWorkflowPage } from '../features/workflows/CreateWorkflowPage';
 import { WorkflowDetailPage } from '../features/workflows/WorkflowDetailPage';
 
@@ -22,7 +23,7 @@ export const router = createBrowserRouter(
         { index: true, element: <DashboardPage /> },
         { path: 'vorgaenge/neu', element: <CreateWorkflowPage /> },
         { path: 'vorgaenge/:id', element: <WorkflowDetailPage /> },
-        { path: 'pruefen', element: <Placeholder title="Dokument prüfen" /> },
+        { path: 'pruefen', element: <VerificationPage /> },
         { path: 'barrierefreiheit', element: <Placeholder title="Barrierefreiheit" /> },
       ],
     },
