@@ -26,6 +26,17 @@ describe('workflow storage', () => {
     },
   );
 
+  it.each([
+    { ...seedWorkflows[0], dueDate: undefined },
+    { ...seedWorkflows[0], status: 'unknown' },
+    { ...seedWorkflows[0], document: { hash: seedWorkflows[0]!.document.hash } },
+    { ...seedWorkflows[0], audit: [{ title: 'unvollständig' }] },
+  ])('recovers from a malformed nested workflow', (workflow) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, workflows: [workflow] }));
+
+    expect(loadWorkflowDocument().workflows).toEqual(seedWorkflows);
+  });
+
   it('never serializes local file bytes', () => {
     saveWorkflowDocument({ version: 1, workflows: seedWorkflows });
     const serialized = localStorage.getItem(STORAGE_KEY) ?? '';

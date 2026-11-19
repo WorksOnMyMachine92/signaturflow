@@ -574,10 +574,7 @@ h1 {
     grid-column: 1 / -1;
   }
   .workflow-row {
-    grid-template-columns: 1.5fr 1fr 1fr;
-  }
-  .workflow-row > :last-child {
-    display: none;
+    grid-template-columns: 1.4fr 1fr 1fr 0.9fr;
   }
 }
 
@@ -612,12 +609,21 @@ h1 {
     color: var(--accent-strong);
     background: var(--accent-soft);
   }
+  .mobile-header__meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+  }
   .utility-bar {
     min-height: auto;
     justify-content: space-between;
   }
   .demo-pill {
-    display: none;
+    max-width: 12rem;
+    white-space: normal;
   }
   .page-heading {
     align-items: stretch;
@@ -639,7 +645,7 @@ h1 {
   .workflow-row > :last-child {
     display: block;
   }
-  .workflow-row [role='cell']::before {
+  .workflow-row [data-label]::before {
     content: attr(data-label);
     display: block;
     margin-bottom: 0.15rem;
@@ -648,6 +654,27 @@ h1 {
     font-weight: 700;
     text-transform: uppercase;
   }
+}
+
+.review-card dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+.review-card dl div {
+  padding: 0.8rem;
+  border-radius: 0.65rem;
+  background: var(--surface-muted);
+}
+.review-card dt {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.review-card dd {
+  margin: 0.25rem 0 0;
+  color: var(--text-strong);
 }
 
 @media (max-width: 32rem) {
@@ -695,6 +722,25 @@ h1 {
   display: grid;
   gap: 0.4rem;
   margin-bottom: 1rem;
+}
+.choice-field {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  border: 0;
+}
+.choice-field legend {
+  width: 100%;
+  margin-bottom: 0.1rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.choice-field label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
 }
 .field label {
   font-size: 0.9rem;

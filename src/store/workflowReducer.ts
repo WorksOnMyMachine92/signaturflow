@@ -52,7 +52,7 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
     const id = action.id ?? crypto.randomUUID();
     const workflow: Workflow = {
       id,
-      reference: `SF-${new Date().getFullYear()}-${id.slice(0, 4).toUpperCase()}`,
+      reference: `SF-${new Date().getFullYear()}-${id.replaceAll('-', '').slice(0, 8).toUpperCase()}`,
       ...action.payload,
       status: 'draft',
       createdAt: now,

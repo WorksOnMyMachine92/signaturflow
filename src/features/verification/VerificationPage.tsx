@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Field } from '../../components/ui/Field';
 import { useWorkflows } from '../../store/WorkflowProvider';
 import { MAX_FILE_SIZE } from '../workflows/schema';
@@ -11,13 +11,17 @@ export function VerificationPage() {
   const [referenceId, setReferenceId] = useState('');
   const [result, setResult] = useState<Result>(null);
   const [error, setError] = useState('');
+  const verificationOperation = useRef(0);
   const reference = workflows.find((workflow) => workflow.id === referenceId);
   function chooseReference(id: string) {
+    verificationOperation.current += 1;
     setReferenceId(id);
     setResult(null);
     setError('');
   }
   async function verify(file?: File) {
+    const operation = ++verificationOperation.current;
+    const expectedHash = reference?.document.hash;
     setResult(null);
     setError('');
     if (!file) return;
@@ -35,9 +39,14 @@ export function VerificationPage() {
     }
     try {
       const hash = await sha256File(file);
-      setResult({ kind: hash === reference?.document.hash ? 'match' : 'mismatch', hash });
+      if (operation !== verificationOperation.current || expectedHash !== reference?.document.hash)
+        return;
+      setResult({ kind: hash === expectedHash ? 'match' : 'mismatch', hash });
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Die Datei konnte nicht gelesen werden.');
+      if (operation === verificationOperation.current)
+        setError(
+          caught instanceof Error ? caught.message : 'Die Datei konnte nicht gelesen werden.',
+        );
     }
   }
   return (
@@ -91,6 +100,7 @@ export function VerificationPage() {
               disabled={!reference}
               onChange={(event) => void verify(event.target.files?.[0])}
               aria-describedby={`verify-file-hint${error ? ' verify-file-error' : ''}`}
+              aria-invalid={!!error}
             />
           </Field>
           {reference && (

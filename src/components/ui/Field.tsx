@@ -19,7 +19,7 @@ export function Field({ id, label, hint, error, children }: FieldProps) {
       )}
       {children}
       {error && (
-        <span id={`${id}-error`} className="field__error">
+        <span id={`${id}-error`} className="field__error" role="alert">
           {error}
         </span>
       )}

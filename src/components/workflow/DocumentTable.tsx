@@ -15,7 +15,8 @@ export function DocumentTable({ workflows }: { workflows: Workflow[] }) {
         </div>
         <ul className="workflow-items" aria-label="Signaturvorgänge">
           {workflows.map((workflow) => {
-            const deadline = getDeadlineState(workflow.dueDate);
+            const deadline =
+              workflow.status === 'completed' ? 'normal' : getDeadlineState(workflow.dueDate);
             return (
               <li key={workflow.id}>
                 <Link className="workflow-row" to={`/vorgaenge/${workflow.id}`}>

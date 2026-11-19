@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { Button } from '../ui/Button';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
@@ -18,6 +18,7 @@ export function AppShell() {
   const { reset } = useWorkflows();
   const location = useLocation();
   const [resetOpen, setResetOpen] = useState(false);
+  const initialRoute = useRef(true);
 
   useEffect(() => {
     const titles: Record<string, string> = {
@@ -30,6 +31,19 @@ export function AppShell() {
       titles[location.pathname] ??
       (location.pathname.startsWith('/vorgaenge/') ? 'Vorgangsdetails' : 'Seite nicht gefunden');
     document.title = `${page} · SignaturFlow`;
+  }, [location.pathname]);
+  useEffect(() => {
+    if (initialRoute.current) {
+      initialRoute.current = false;
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      const heading = document.querySelector<HTMLElement>('#main-content h1');
+      if (!heading) return;
+      heading.tabIndex = -1;
+      heading.focus();
+    });
+    return () => window.clearTimeout(timer);
   }, [location.pathname]);
   return (
     <div className="shell">
@@ -60,12 +74,18 @@ export function AppShell() {
         <header className="mobile-header">
           <span className="brand">SignaturFlow</span>
           <nav aria-label="Mobile Navigation">
-            {navItems.slice(0, 3).map(([to, label]) => (
+            {navItems.map(([to, label]) => (
               <NavLink key={to} to={to} end={to === '/'}>
                 {label}
               </NavLink>
             ))}
           </nav>
+          <div className="mobile-header__meta">
+            <span>Lokale Demo · keine rechtsgültige Signatur</span>
+            <Button variant="quiet" onClick={() => setResetOpen(true)}>
+              Demodaten zurücksetzen
+            </Button>
+          </div>
         </header>
         <div className="utility-bar">
           <span className="demo-pill">Demo – keine rechtsgültige Signatur</span>

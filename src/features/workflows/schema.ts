@@ -18,6 +18,7 @@ export function buildCreateWorkflowSchema(today = new Date()) {
       .min(1, 'Wählen Sie eine Frist.')
       .refine((value) => value >= minimumDate, 'Die Frist darf nicht in der Vergangenheit liegen.'),
     note: z.string().max(500, 'Die Notiz darf höchstens 500 Zeichen enthalten.'),
+    signatureMethod: z.enum(['typed_demo', 'drawn_demo']),
     file: z
       .instanceof(File, { error: 'Wählen Sie ein PDF-Dokument.' })
       .refine((file) => file.size > 0, 'Die Datei ist leer.')

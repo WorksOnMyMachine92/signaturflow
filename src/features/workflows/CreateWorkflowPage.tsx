@@ -1,46 +1,68 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
 import { Field } from '../../components/ui/Field';
 import { useWorkflows } from '../../store/WorkflowProvider';
 import { formatFingerprint, sha256File } from '../verification/hash';
-import { createWorkflowSchema, type CreateWorkflowFields } from './schema';
+import { buildCreateWorkflowSchema, type CreateWorkflowFields } from './schema';
 
 export function CreateWorkflowPage() {
   const navigate = useNavigate();
   const { create } = useWorkflows();
   const [hash, setHash] = useState('');
   const [fileError, setFileError] = useState('');
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [documentSource, setDocumentSource] = useState<'local' | 'demo'>('local');
+  const hashOperation = useRef(0);
   const form = useForm<CreateWorkflowFields>({
-    resolver: zodResolver(createWorkflowSchema),
-    defaultValues: { title: '', signerName: '', signerEmail: '', dueDate: '', note: '' },
+    resolver: async (values, context, options) =>
+      zodResolver(buildCreateWorkflowSchema())(values, context, options),
+    defaultValues: {
+      title: '',
+      signerName: '',
+      signerEmail: '',
+      dueDate: '',
+      note: '',
+      signatureMethod: 'typed_demo',
+    },
   });
   const errors = form.formState.errors;
 
   async function chooseFile(file?: File) {
+    const operation = ++hashOperation.current;
     setHash('');
     setFileError('');
+    setReviewOpen(false);
     if (!file) return;
     form.setValue('file', file, { shouldValidate: true });
     try {
-      setHash(await sha256File(file));
+      const nextHash = await sha256File(file);
+      if (operation === hashOperation.current && form.getValues('file') === file) setHash(nextHash);
     } catch (error) {
-      setFileError(
-        error instanceof Error ? error.message : 'Die Datei konnte nicht gelesen werden.',
-      );
+      if (operation === hashOperation.current)
+        setFileError(
+          error instanceof Error ? error.message : 'Die Datei konnte nicht gelesen werden.',
+        );
     }
   }
 
-  const submit = form.handleSubmit((values) => {
+  const prepareReview = form.handleSubmit(() => {
     if (!hash) return;
+    setReviewOpen(true);
+  });
+
+  function saveWorkflow() {
+    const values = form.getValues();
+    if (!hash || !values.file) return;
     const id = create({
       title: values.title,
       signerName: values.signerName,
       signerEmail: values.signerEmail,
       dueDate: values.dueDate,
       note: values.note,
+      signatureMethod: values.signatureMethod,
       document: {
         name: values.file.name,
         size: values.file.size,
@@ -49,7 +71,7 @@ export function CreateWorkflowPage() {
       },
     });
     navigate(`/vorgaenge/${id}`);
-  });
+  }
 
   const errorEntries = Object.entries(errors).filter(([, error]) => error?.message);
 
@@ -79,7 +101,7 @@ export function CreateWorkflowPage() {
         </div>
       )}
 
-      <form onSubmit={submit} noValidate className="workflow-form">
+      <form onSubmit={prepareReview} noValidate className="workflow-form">
         <section className="form-card" aria-labelledby="document-section">
           <h2 id="document-section">Dokument</h2>
           <Field id="title" label="Dokumenttitel" error={errors.title?.message}>
@@ -90,6 +112,42 @@ export function CreateWorkflowPage() {
               aria-describedby={errors.title ? 'title-error' : undefined}
             />
           </Field>
+          <fieldset className="choice-field">
+            <legend>Dokumentquelle</legend>
+            <label>
+              <input
+                type="radio"
+                name="document-source"
+                checked={documentSource === 'local'}
+                onChange={() => {
+                  setDocumentSource('local');
+                  form.resetField('file');
+                  void chooseFile();
+                }}
+              />
+              Eigenes lokales PDF
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="document-source"
+                checked={documentSource === 'demo'}
+                onChange={() => {
+                  setDocumentSource('demo');
+                  void chooseFile(
+                    new File(
+                      ['%PDF-1.4\n% SignaturFlow Demonstrationsdokument\n'],
+                      'signaturflow-demo.pdf',
+                      {
+                        type: 'application/pdf',
+                      },
+                    ),
+                  );
+                }}
+              />
+              Gebündeltes Demo-Dokument
+            </label>
+          </fieldset>
           <Field
             id="file"
             label="PDF-Dokument"
@@ -100,11 +158,15 @@ export function CreateWorkflowPage() {
               id="file"
               type="file"
               accept="application/pdf,.pdf"
+              disabled={documentSource === 'demo'}
               onChange={(event) => void chooseFile(event.target.files?.[0])}
               aria-invalid={!!errors.file || !!fileError}
               aria-describedby={`file-hint${errors.file || fileError ? ' file-error' : ''}`}
             />
           </Field>
+          {documentSource === 'demo' && (
+            <p className="field__hint">signaturflow-demo.pdf ist ausgewählt.</p>
+          )}
           {hash && (
             <div className="fingerprint">
               <span>Lokaler SHA-256-Fingerabdruck</span>
@@ -156,12 +218,52 @@ export function CreateWorkflowPage() {
               aria-describedby={`note-hint${errors.note ? ' note-error' : ''}`}
             />
           </Field>
+          <Field
+            id="signatureMethod"
+            label="Signaturmethode der Demo"
+            hint="Die Auswahl simuliert nur den Prozess und erzeugt keine rechtsgültige Signatur."
+          >
+            <select id="signatureMethod" {...form.register('signatureMethod')}>
+              <option value="typed_demo">Namen eingeben (Demo)</option>
+              <option value="drawn_demo">Signatur zeichnen (Demo)</option>
+            </select>
+          </Field>
         </section>
+        {reviewOpen && (
+          <section className="form-card review-card" aria-labelledby="review-section">
+            <h2 id="review-section">Angaben prüfen</h2>
+            <dl>
+              <div>
+                <dt>Dokument</dt>
+                <dd>{form.getValues('title')}</dd>
+              </div>
+              <div>
+                <dt>Unterzeichnende Person</dt>
+                <dd>{form.getValues('signerName')}</dd>
+              </div>
+              <div>
+                <dt>Frist</dt>
+                <dd>{form.getValues('dueDate')}</dd>
+              </div>
+              <div>
+                <dt>Signaturmethode</dt>
+                <dd>
+                  {form.getValues('signatureMethod') === 'typed_demo'
+                    ? 'Namen eingeben (Demo)'
+                    : 'Signatur zeichnen (Demo)'}
+                </dd>
+              </div>
+            </dl>
+            <Button type="button" onClick={saveWorkflow}>
+              Prüfung abschließen und speichern
+            </Button>
+          </section>
+        )}
         <div className="form-actions">
           <Button variant="secondary" onClick={() => navigate('/')}>
             Abbrechen
           </Button>
-          <Button type="submit">Vorgang lokal speichern</Button>
+          <Button type="submit">Angaben prüfen</Button>
         </div>
       </form>
     </section>

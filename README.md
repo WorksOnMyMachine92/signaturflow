@@ -15,7 +15,8 @@ SignaturFlow ist eine barrierebewusst entwickelte React-Demonstration für digit
 ## Funktionen
 
 - Dashboard mit Kennzahlen, Suche, Filterung und Sortierung
-- Lokales Anlegen eines Signaturvorgangs
+- Lokales Anlegen eines Signaturvorgangs mit eigener PDF oder gebündeltem Demo-Dokument
+- Prüfschritt und Auswahl einer ausdrücklich simulierten Signaturmethode vor dem Speichern
 - PDF-Validierung und SHA-256-Berechnung über Web Crypto
 - Linearer Statusprozess mit bestätigten Änderungen
 - Audit-Timeline für jeden Vorgang

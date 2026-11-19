@@ -10,13 +10,43 @@ function freshDocument(): PersistedWorkflowDocumentV1 {
 function isWorkflow(value: unknown): value is Workflow {
   if (!value || typeof value !== 'object') return false;
   const candidate = value as Partial<Workflow>;
-  return (
-    typeof candidate.id === 'string' &&
-    typeof candidate.title === 'string' &&
-    typeof candidate.status === 'string' &&
+  const document = candidate.document;
+  const statuses = ['draft', 'awaiting_signature', 'awaiting_verification', 'completed'];
+  const isString = (entry: unknown): entry is string => typeof entry === 'string';
+  const isTimestamp = (entry: unknown) => isString(entry) && !Number.isNaN(Date.parse(entry));
+  const isCalendarDate = (entry: unknown) =>
+    isString(entry) && /^\d{4}-\d{2}-\d{2}$/.test(entry) && !Number.isNaN(Date.parse(entry));
+  const validAudit =
     Array.isArray(candidate.audit) &&
-    !!candidate.document &&
-    typeof candidate.document.hash === 'string'
+    candidate.audit.every(
+      (entry) =>
+        !!entry &&
+        isString(entry.id) &&
+        isTimestamp(entry.timestamp) &&
+        isString(entry.title) &&
+        isString(entry.description),
+    );
+  return (
+    isString(candidate.id) &&
+    isString(candidate.reference) &&
+    isString(candidate.title) &&
+    isString(candidate.signerName) &&
+    isString(candidate.signerEmail) &&
+    isCalendarDate(candidate.dueDate) &&
+    isString(candidate.note) &&
+    isString(candidate.status) &&
+    statuses.includes(candidate.status) &&
+    isTimestamp(candidate.createdAt) &&
+    isTimestamp(candidate.updatedAt) &&
+    !!document &&
+    isString(document.name) &&
+    typeof document.size === 'number' &&
+    Number.isFinite(document.size) &&
+    document.size >= 0 &&
+    isString(document.mimeType) &&
+    isString(document.hash) &&
+    /^[A-F0-9]{64}$/i.test(document.hash) &&
+    validAudit
   );
 }
 

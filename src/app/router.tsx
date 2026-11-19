@@ -6,12 +6,14 @@ import { NotFoundPage } from '../features/NotFoundPage';
 import { VerificationPage } from '../features/verification/VerificationPage';
 import { CreateWorkflowPage } from '../features/workflows/CreateWorkflowPage';
 import { WorkflowDetailPage } from '../features/workflows/WorkflowDetailPage';
+import { RouteErrorPage } from '../features/RouteErrorPage';
 
 export const router = createBrowserRouter(
   [
     {
       path: '/',
       element: <AppShell />,
+      errorElement: <RouteErrorPage />,
       children: [
         { index: true, element: <DashboardPage /> },
         { path: 'vorgaenge/neu', element: <CreateWorkflowPage /> },

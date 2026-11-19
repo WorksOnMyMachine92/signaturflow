@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { App } from './App';
 import { AppProviders } from './providers';
@@ -41,6 +41,12 @@ describe('App', () => {
 
     expect(screen.getByRole('navigation', { name: 'Hauptnavigation' })).toBeVisible();
     expect(screen.getByRole('combobox', { name: 'Farbschema' })).toHaveValue('system');
+    const mobileHeader = document.querySelector<HTMLElement>('.mobile-header')!;
+    expect(within(mobileHeader).getByText('Barrierefreiheit')).toBeInTheDocument();
+    expect(
+      within(mobileHeader).getByRole('button', { name: 'Demodaten zurücksetzen' }),
+    ).toBeInTheDocument();
+    expect(within(mobileHeader).getByText(/keine rechtsgültige Signatur/i)).toBeInTheDocument();
   });
 
   it('has no automatically detectable accessibility violations', async () => {
@@ -55,9 +61,25 @@ describe('App', () => {
     const user = userEvent.setup();
     renderApp();
 
-    await user.click(screen.getByRole('button', { name: 'Demodaten zurücksetzen' }));
+    await user.click(screen.getAllByRole('button', { name: 'Demodaten zurücksetzen' })[0]!);
     expect(screen.getByRole('dialog', { name: 'Demodaten zurücksetzen?' })).toBeVisible();
     await user.click(screen.getByRole('button', { name: 'Abbrechen' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+    localStorage.setItem('signaturflow.workflows.v1', '{"temporary":true}');
+    await user.click(screen.getAllByRole('button', { name: 'Demodaten zurücksetzen' })[0]!);
+    await user.click(screen.getByRole('button', { name: 'Zurücksetzen' }));
+    await waitFor(() =>
+      expect(localStorage.getItem('signaturflow.workflows.v1')).toContain('demo-vertrag-2026'),
+    );
+  });
+
+  it('moves focus to the page heading after client-side navigation', async () => {
+    const user = userEvent.setup();
+    renderApp();
+
+    await user.click(screen.getAllByRole('link', { name: 'Neuer Vorgang' })[0]!);
+    const heading = await screen.findByRole('heading', { name: 'Signatur vorbereiten' });
+    await waitFor(() => expect(heading).toHaveFocus());
   });
 });

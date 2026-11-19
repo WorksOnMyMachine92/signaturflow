@@ -22,6 +22,7 @@ export type Workflow = {
   signerEmail: string;
   dueDate: string;
   note: string;
+  signatureMethod?: 'typed_demo' | 'drawn_demo';
   document: DocumentMetadata;
   status: WorkflowStatus;
   createdAt: string;
@@ -31,7 +32,7 @@ export type Workflow = {
 
 export type NewWorkflowInput = Pick<
   Workflow,
-  'title' | 'signerName' | 'signerEmail' | 'dueDate' | 'note' | 'document'
+  'title' | 'signerName' | 'signerEmail' | 'dueDate' | 'note' | 'signatureMethod' | 'document'
 >;
 
 export type PersistedWorkflowDocumentV1 = {

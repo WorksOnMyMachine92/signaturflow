@@ -6,6 +6,7 @@ const base = {
   signerEmail: 'mara@example.test',
   dueDate: '2026-11-20',
   note: '',
+  signatureMethod: 'typed_demo' as const,
 };
 
 function pdf(name = 'demo.pdf', content = 'PDF') {
