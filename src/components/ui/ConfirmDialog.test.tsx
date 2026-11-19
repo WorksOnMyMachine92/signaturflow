@@ -4,6 +4,30 @@ import { vi } from 'vitest';
 import { ConfirmDialog } from './ConfirmDialog';
 
 describe('ConfirmDialog', () => {
+  it('keeps the dialog outside an inert application background', () => {
+    render(
+      <div className="shell">
+        <div className="shell__body">
+          <ConfirmDialog
+            open
+            title="Status wirklich ändern?"
+            confirmLabel="Status ändern"
+            onCancel={vi.fn()}
+            onConfirm={vi.fn()}
+          >
+            <p>Text</p>
+          </ConfirmDialog>
+        </div>
+      </div>,
+    );
+
+    const background = document.querySelector<HTMLElement>('.shell__body')!;
+    const confirm = screen.getByRole('button', { name: 'Status ändern' });
+
+    expect(background.inert).toBe(true);
+    expect(background.contains(confirm)).toBe(false);
+  });
+
   it('traps keyboard focus, closes with Escape, and restores focus', async () => {
     const user = userEvent.setup();
     const cancel = vi.fn();

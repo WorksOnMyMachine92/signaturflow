@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { Button } from './Button';
 
 type ConfirmDialogProps = {
@@ -53,7 +54,7 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
     };
   }, [props.open, props.onCancel]);
   if (!props.open) return null;
-  return (
+  return createPortal(
     <div className="dialog-backdrop">
       <section
         ref={dialogRef}
@@ -73,6 +74,7 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
           </Button>
         </div>
       </section>
-    </div>
+    </div>,
+    document.body,
   );
 }

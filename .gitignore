@@ -7,4 +7,5 @@ coverage/
 !.env.example
 .superpowers/
 .worktrees/
+.playwright-cli/
 *.log
