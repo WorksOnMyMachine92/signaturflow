@@ -984,3 +984,56 @@ h1 {
     min-height: 18rem;
   }
 }
+.sidebar__footer .button {
+  margin-top: 0.7rem;
+  padding-inline: 0;
+  text-align: left;
+}
+.accessibility-page {
+  max-width: 70rem;
+}
+.accessibility-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.accessibility-grid h2 {
+  margin-top: 0;
+  font-size: 1.1rem;
+}
+.accessibility-grid ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: var(--text-muted);
+}
+.accessibility-grid li + li {
+  margin-top: 0.55rem;
+}
+.error-code {
+  color: var(--accent-strong);
+  font-size: 3rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+}
+.not-found-inline .button {
+  display: inline-flex;
+  margin-top: 1rem;
+  text-decoration: none;
+}
+@media (max-width: 45rem) {
+  .accessibility-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (forced-colors: active) {
+  .dialog-backdrop {
+    background: Canvas;
+  }
+  .result-card,
+  .status,
+  .field input,
+  .field select,
+  .field textarea {
+    forced-color-adjust: auto;
+  }
+}

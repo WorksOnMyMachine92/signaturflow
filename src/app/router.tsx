@@ -1,18 +1,11 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { AppShell } from '../components/layout/AppShell';
 import { DashboardPage } from '../features/dashboard/DashboardPage';
+import { AccessibilityPage } from '../features/accessibility/AccessibilityPage';
+import { NotFoundPage } from '../features/NotFoundPage';
 import { VerificationPage } from '../features/verification/VerificationPage';
 import { CreateWorkflowPage } from '../features/workflows/CreateWorkflowPage';
 import { WorkflowDetailPage } from '../features/workflows/WorkflowDetailPage';
-
-function Placeholder({ title }: { title: string }) {
-  return (
-    <section className="content-panel">
-      <h1>{title}</h1>
-      <p>Dieser Bereich wird im nächsten Umsetzungsschritt ergänzt.</p>
-    </section>
-  );
-}
 
 export const router = createBrowserRouter(
   [
@@ -24,7 +17,8 @@ export const router = createBrowserRouter(
         { path: 'vorgaenge/neu', element: <CreateWorkflowPage /> },
         { path: 'vorgaenge/:id', element: <WorkflowDetailPage /> },
         { path: 'pruefen', element: <VerificationPage /> },
-        { path: 'barrierefreiheit', element: <Placeholder title="Barrierefreiheit" /> },
+        { path: 'barrierefreiheit', element: <AccessibilityPage /> },
+        { path: '*', element: <NotFoundPage /> },
       ],
     },
   ],

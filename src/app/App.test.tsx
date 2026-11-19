@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { App } from './App';
 import { AppProviders } from './providers';
 import { getAccessibilityResults } from '../test/axe';
@@ -48,5 +49,15 @@ describe('App', () => {
     const results = await getAccessibilityResults(container);
 
     expect(results.violations).toEqual([]);
+  });
+
+  it('requires confirmation before resetting local demo data', async () => {
+    const user = userEvent.setup();
+    renderApp();
+
+    await user.click(screen.getByRole('button', { name: 'Demodaten zurücksetzen' }));
+    expect(screen.getByRole('dialog', { name: 'Demodaten zurücksetzen?' })).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Abbrechen' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });

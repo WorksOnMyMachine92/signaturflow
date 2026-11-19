@@ -1,5 +1,9 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { Button } from '../ui/Button';
+import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { useTheme, type ThemeMode } from '../../hooks/useTheme';
+import { useWorkflows } from '../../store/WorkflowProvider';
 import { SkipLink } from './SkipLink';
 
 const navItems = [
@@ -11,6 +15,22 @@ const navItems = [
 
 export function AppShell() {
   const { mode, setMode } = useTheme();
+  const { reset } = useWorkflows();
+  const location = useLocation();
+  const [resetOpen, setResetOpen] = useState(false);
+
+  useEffect(() => {
+    const titles: Record<string, string> = {
+      '/': 'Übersicht',
+      '/vorgaenge/neu': 'Neuer Vorgang',
+      '/pruefen': 'Dokument prüfen',
+      '/barrierefreiheit': 'Barrierefreiheit',
+    };
+    const page =
+      titles[location.pathname] ??
+      (location.pathname.startsWith('/vorgaenge/') ? 'Vorgangsdetails' : 'Seite nicht gefunden');
+    document.title = `${page} · SignaturFlow`;
+  }, [location.pathname]);
   return (
     <div className="shell">
       <SkipLink />
@@ -31,6 +51,9 @@ export function AppShell() {
         <div className="sidebar__footer">
           <strong>Lokale Demo</strong>
           <span>Keine Datenübertragung</span>
+          <Button variant="quiet" onClick={() => setResetOpen(true)}>
+            Demodaten zurücksetzen
+          </Button>
         </div>
       </aside>
       <div className="shell__body">
@@ -59,6 +82,21 @@ export function AppShell() {
           <Outlet />
         </main>
       </div>
+      <ConfirmDialog
+        open={resetOpen}
+        title="Demodaten zurücksetzen?"
+        confirmLabel="Zurücksetzen"
+        onCancel={() => setResetOpen(false)}
+        onConfirm={() => {
+          reset();
+          setResetOpen(false);
+        }}
+      >
+        <p>
+          Eigene lokale Vorgänge und Statusänderungen werden entfernt. Die ursprünglichen
+          Beispieldaten werden wiederhergestellt.
+        </p>
+      </ConfirmDialog>
     </div>
   );
 }
