@@ -22,7 +22,7 @@ SignaturFlow ist eine barrierebewusst entwickelte React-Demonstration für digit
 - Audit-Timeline für jeden Vorgang
 - Expliziter Vergleich einer lokalen Datei mit einem Referenz-Hash
 - Hell-, Dunkel- und Systemmodus
-- Responsive Darstellung für Smartphone, Tablet und Desktop
+- Responsive Darstellung für Smartphone, Tablet und Desktop mit eigener mobiler Menünavigation
 - Lokaler Reset auf die ursprünglichen Demodaten
 
 ## Technik

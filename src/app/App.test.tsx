@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { App } from './App';
 import { AppProviders } from './providers';
@@ -13,6 +13,8 @@ function renderApp() {
 }
 
 describe('App', () => {
+  afterEach(() => vi.useRealTimers());
+
   beforeEach(() => {
     Object.defineProperty(window, 'matchMedia', {
       configurable: true,
@@ -36,12 +38,14 @@ describe('App', () => {
     expect(screen.getByText('Demo – keine rechtsgültige Signatur')).toBeVisible();
   });
 
-  it('provides labelled navigation and theme controls', () => {
+  it('provides labelled navigation and theme controls', async () => {
+    const user = userEvent.setup();
     renderApp();
 
     expect(screen.getByRole('navigation', { name: 'Hauptnavigation' })).toBeVisible();
     expect(screen.getByRole('combobox', { name: 'Farbschema' })).toHaveValue('system');
     const mobileHeader = document.querySelector<HTMLElement>('.mobile-header')!;
+    await user.click(within(mobileHeader).getByRole('button', { name: 'Menü öffnen' }));
     expect(within(mobileHeader).getByText('Barrierefreiheit')).toBeInTheDocument();
     expect(
       within(mobileHeader).getByRole('button', { name: 'Demodaten zurücksetzen' }),
@@ -74,12 +78,44 @@ describe('App', () => {
     );
   });
 
-  it('moves focus to the page heading after client-side navigation', async () => {
-    const user = userEvent.setup();
+  it('moves focus to the page heading and removes its cue after three seconds', async () => {
+    vi.useFakeTimers();
     renderApp();
 
-    await user.click(screen.getAllByRole('link', { name: 'Neuer Vorgang' })[0]!);
-    const heading = await screen.findByRole('heading', { name: 'Signatur vorbereiten' });
-    await waitFor(() => expect(heading).toHaveFocus());
+    fireEvent.click(screen.getAllByRole('link', { name: 'Neuer Vorgang' })[0]!);
+    const heading = screen.getByRole('heading', { name: 'Signatur vorbereiten' });
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(heading).toHaveFocus();
+    expect(heading).toHaveClass('route-heading-focus');
+    await vi.advanceTimersByTimeAsync(2999);
+    expect(heading).toHaveClass('route-heading-focus');
+    await vi.advanceTimersByTimeAsync(1);
+    expect(heading).not.toHaveClass('route-heading-focus');
+    expect(heading).toHaveFocus();
+  });
+
+  it('closes mobile navigation and focuses the heading when the current page is selected', async () => {
+    const user = userEvent.setup();
+    renderApp();
+    const mobileHeader = document.querySelector<HTMLElement>('.mobile-header')!;
+
+    await user.click(within(mobileHeader).getByRole('button', { name: 'Menü öffnen' }));
+    await user.click(within(mobileHeader).getByRole('link', { name: 'Übersicht' }));
+
+    expect(within(mobileHeader).queryByRole('navigation')).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Signaturvorgänge' })).toHaveFocus();
+  });
+
+  it('returns focus to the mobile menu trigger after cancelling reset', async () => {
+    const user = userEvent.setup();
+    renderApp();
+    const mobileHeader = document.querySelector<HTMLElement>('.mobile-header')!;
+
+    await user.click(within(mobileHeader).getByRole('button', { name: 'Menü öffnen' }));
+    await user.click(within(mobileHeader).getByRole('button', { name: 'Demodaten zurücksetzen' }));
+    await user.click(screen.getByRole('button', { name: 'Abbrechen' }));
+
+    expect(within(mobileHeader).getByRole('button', { name: 'Menü öffnen' })).toHaveFocus();
   });
 });

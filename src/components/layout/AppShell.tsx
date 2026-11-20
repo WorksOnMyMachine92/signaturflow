@@ -5,13 +5,7 @@ import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { useTheme, type ThemeMode } from '../../hooks/useTheme';
 import { useWorkflows } from '../../store/WorkflowProvider';
 import { SkipLink } from './SkipLink';
-
-const navItems = [
-  ['/', 'Übersicht'],
-  ['/vorgaenge/neu', 'Neuer Vorgang'],
-  ['/pruefen', 'Dokument prüfen'],
-  ['/barrierefreiheit', 'Barrierefreiheit'],
-] as const;
+import { MobileMenu, navItems } from './MobileMenu';
 
 export function AppShell() {
   const { mode, setMode } = useTheme();
@@ -37,13 +31,21 @@ export function AppShell() {
       initialRoute.current = false;
       return;
     }
-    const timer = window.setTimeout(() => {
-      const heading = document.querySelector<HTMLElement>('#main-content h1');
+    let heading: HTMLElement | null = null;
+    let cueTimer: number | undefined;
+    const focusTimer = window.setTimeout(() => {
+      heading = document.querySelector<HTMLElement>('#main-content h1');
       if (!heading) return;
       heading.tabIndex = -1;
+      heading.classList.add('route-heading-focus');
       heading.focus();
+      cueTimer = window.setTimeout(() => heading?.classList.remove('route-heading-focus'), 3000);
     });
-    return () => window.clearTimeout(timer);
+    return () => {
+      window.clearTimeout(focusTimer);
+      if (cueTimer !== undefined) window.clearTimeout(cueTimer);
+      heading?.classList.remove('route-heading-focus');
+    };
   }, [location.pathname]);
   return (
     <div className="shell">
@@ -71,22 +73,7 @@ export function AppShell() {
         </div>
       </aside>
       <div className="shell__body">
-        <header className="mobile-header">
-          <span className="brand">SignaturFlow</span>
-          <nav aria-label="Mobile Navigation">
-            {navItems.map(([to, label]) => (
-              <NavLink key={to} to={to} end={to === '/'}>
-                {label}
-              </NavLink>
-            ))}
-          </nav>
-          <div className="mobile-header__meta">
-            <span>Lokale Demo · keine rechtsgültige Signatur</span>
-            <Button variant="quiet" onClick={() => setResetOpen(true)}>
-              Demodaten zurücksetzen
-            </Button>
-          </div>
-        </header>
+        <MobileMenu mode={mode} setMode={setMode} onReset={() => setResetOpen(true)} />
         <div className="utility-bar">
           <span className="demo-pill">Demo – keine rechtsgültige Signatur</span>
           <label className="theme-select">
