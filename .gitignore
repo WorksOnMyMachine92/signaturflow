@@ -9,4 +9,5 @@ coverage/
 .worktrees/
 .playwright-cli/
 output/playwright/
+docs/superpowers/
 *.log
